@@ -12,3 +12,39 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User{
+  id         Int        @id @default(autoincrement())
+  email      String     @unique
+  name       String?
+  posts      Post[]
+  comments   Comment[]
+  created_at DateTime   @default(now())
+
+  @@map("Users") // Maps to the "Users" table in the database
+}
+
+model Post {
+  id         Int        @id @default(autoincrement())
+  title      String
+  content    String
+  published  Boolean
+  author     User      @relation(fields: [author_id], references: [id])
+  author_id  Int
+  comments   Comment[]
+  created_at DateTime   @default(now())
+
+  @@map("Posts") // Maps to the "Posts" table in the database
+}
+
+model Comment {
+  id         Int        @id @default(autoincrement())
+  content    String
+  post       Post      @relation(fields: [post_id], references: [id])
+  post_id    Int
+  author     User      @relation(fields: [author_id], references: [id])
+  author_id  Int
+  created_at DateTime   @default(now())
+
+  @@map("Comments") // Maps to the "Comments" table in the database
+}
