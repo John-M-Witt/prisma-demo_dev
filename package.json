@@ -2,6 +2,7 @@
   "name": "prisma-demo_dev",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "node prisma/seed.js"
@@ -13,5 +14,8 @@
   "dependencies": {
     "@prisma/client": "^6.12.0",
     "prisma": "^6.12.0"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.9.0"
   }
 }

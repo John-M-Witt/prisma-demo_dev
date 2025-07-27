@@ -21,7 +21,7 @@ model User {
   comments   Comment[]
   created_at DateTime  @default(now())
 
-  @@map("Users") // Maps to the "Users" table in the database
+  @@map("users") // Maps to the "users" table in the database. Quotes
 }
 
 model Topic {
@@ -30,7 +30,7 @@ model Topic {
   description String?
   posts       Post[]
 
-  @@map("Categories") // Maps to the "Categories" table in the database
+  @@map("categories") // Maps to the "categories" table in the database
 }
 
 model Post {
@@ -45,7 +45,7 @@ model Post {
   comments   Comment[]
   created_at DateTime  @default(now())
 
-  @@map("Posts") // Maps to the "Posts" table in the database
+  @@map("posts") // Maps to the "Posts" table in the database
 }
 
 model Comment {
@@ -57,5 +57,5 @@ model Comment {
   author_id  String
   created_at DateTime @default(now())
 
-  @@map("Comments") // Maps to the "Comments" table in the database
+  @@map("comments") // Maps to the "Comments" table in the database
 }
