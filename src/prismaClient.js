@@ -47,6 +47,7 @@ async function deleteUserByEmail(email) {
     }
 }
 // deleteUserByEmail('teri.smith+17@example.com');
+
 async function updateUserEmail(oldEmail, newEmail) {
     try {
         const user = await prisma.user.update({
