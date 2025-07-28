@@ -22,7 +22,7 @@ model User {
   created_at DateTime  @default(now())
 
   @@index([name]) // Index on name for faster lookups
-  @@map("users") // Maps to the "users" table in the database. Quotes
+  @@map("users") // Maps to the "users" table in the database. 
 }
 
 model Topic {

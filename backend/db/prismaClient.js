@@ -2,14 +2,14 @@ import { PrismaClient } from '@prisma/client/index';
 
 const prisma = new PrismaClient();
 
-// Function to create a new user
+// Create a new user
 async function createUser (name, email) {
   try {
     const user = await prisma.user.create({
       data: {
         name,
         email,
-        created_at: new Date(),
+        created_at: new Date()
       },
     });
     console.log(`User created: ${user.name} (${user.email})`);
@@ -20,8 +20,7 @@ async function createUser (name, email) {
   }
 }
 
-// createUser( 'John Smith', 'johnsmith@google.com');
-
+// Read all users
 async function findAllUsers () {
     try {
         const users = await prisma.user.findMany();
@@ -32,8 +31,7 @@ async function findAllUsers () {
         await prisma.$disconnect();
     }
 } 
-// findAllUsers();
-
+// Delete a user by email
 async function deleteUserByEmail(email) {
     try {
         const user = await prisma.user.delete({
@@ -46,8 +44,8 @@ async function deleteUserByEmail(email) {
         await prisma.$disconnect();
     }
 }
-// deleteUserByEmail('teri.smith+17@example.com');
 
+//Update existing user email   
 async function updateUserEmail(oldEmail, newEmail) {
     try {
         const user = await prisma.user.update({
@@ -61,5 +59,25 @@ async function updateUserEmail(oldEmail, newEmail) {
         await prisma.$disconnect();
     }
 }
-updateUserEmail('johnsmith@google.com','john.smith@google.com');
+//Create a post
+async function addPost (title, content, published, author_id, topic_id) {
+    try {
+        const newPost = await prisma.post.create({
+            data: {
+                title, 
+                content, 
+                published, 
+                author_id,
+                topic_id,
+                },
+        });
+    console.log(`Post created: ${newPost}`);
+    }
+    catch(error) {
+      console.log(`Error creating post: ${error}`);  
+    } finally {
+        await prisma.$disconnect();
+    }
+}
+// addPost('My First Post', 'This is the content of my first post.', true, '9d764bcb-0c4b-437e-a397-ef0b45a31b8d');
 
