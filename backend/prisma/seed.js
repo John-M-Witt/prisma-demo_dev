@@ -47,6 +47,3 @@ seedUsers()
 .finally(async () => {
   await prisma.$disconnect();
 });
-
-
- 

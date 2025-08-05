@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client/index';
+import { useImperativeHandle } from 'react';
 
 const prisma = new PrismaClient();
 
@@ -79,5 +80,23 @@ async function addPost (title, content, published, author_id, topic_id) {
         await prisma.$disconnect();
     }
 }
-// addPost('My First Post', 'This is the content of my first post.', true, '9d764bcb-0c4b-437e-a397-ef0b45a31b8d');
+// addPost('My second post', 'This is the content of my second post.', true, '42af36d4-6c1f-4020-aa9d-b088a61fa3b1');
 
+async function usersByDateRange (startDate, EndDate) {
+    try {
+        const usersByDate = await prisma.findMany({
+        where: {
+            AND: [
+                {created_at: {gte: startDate,}},
+                {created_at: {lte: EndDate}},
+            ]
+        }
+        })
+       if(usersByDate.length === 0) {
+        console.log(`Date range from ${startDate} to ${EndDate} returned no users.`)
+       } 
+    }
+    catch(error) {
+        console.log('Error retrieving records', error)
+    }
+}
