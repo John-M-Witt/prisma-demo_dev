@@ -13,8 +13,8 @@ datasource db {
 model User {
   id         String    @id @default(uuid())
   email      String    @unique
-  name       String?
-  city       String? 
+  name       String
+  city       String
   posts      Post[]
   comments   Comment[]
   created_at DateTime  @default(now())

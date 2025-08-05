@@ -1,8 +1,14 @@
+/*
+Executing seed.js script 
+npx prisma db seed: Runs the seed file from the folder with package.json (e.g. ".../backend") 
+npx prisma migrate reset: Drops every table, recreates them from scratch and re-seeds based on seed.js
+*/
+
 import {PrismaClient} from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
-const totalUsers = 200;
+const totalUsers = 500;
 
 async function seedUsers() {
   console.log('🌱 Starting user seed...');
@@ -16,16 +22,17 @@ async function seedUsers() {
     .replace(/[^a-z0-9.]/g, '');       // Remove other invalid characters
     
     return {
-    name: fullName,
-    email: `${baseEmail}+${i}@example.com`, // Ensure unique email for each user
-    created_at: faker.date.past(),
+      email: `${baseEmail}+${i}@example.com`, // Ensure unique email for each user
+      name: fullName,
+      city: faker.location.city(),
+      created_at: faker.date.past(),
     }
-    });
+  });
 
-   if(userData.length === 200) {
+   if(userData.length === totalUsers) {
     console.log(`✅ Prepared ${userData.length} user records for seeding`);
    } else {
-      console.warn(`⚠️ Warning: Expected 200 user records, but only received ${userData.length}`); 
+      console.warn(`⚠️ Warning: Expected 500 user records, but only received ${userData.length}`); 
    }
   // Sort by creation_date ascending prior to DB insertion. Function .getTime() returns the number of milliseconds since January 1, 1970, 00:00:00 UTC.
   userData.sort((a, b) => a.created_at.getTime() - b.created_at.getTime()); 
