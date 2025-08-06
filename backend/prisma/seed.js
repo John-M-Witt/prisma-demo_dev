@@ -137,9 +137,9 @@ const topicIds = [
 ]
 
 async function seedPosts() {
-  console.log('🌱 Seeding 20 posts…')
+  console.log('🌱 Seeding 100 posts…')
 
-  const postsData = Array.from({ length: 20 }).map(() => ({
+  const postsData = Array.from({ length: 80 }).map(() => ({
     title: faker.lorem.sentence(),
     content: faker.lorem.paragraphs(2),
     published: faker.datatype.boolean(),
@@ -190,9 +190,9 @@ const postIds = [
 
 
 async function seedComments() {
-  console.log('🌱 Seeding 20 comments…')
+  console.log('🌱 Seeding 60 comments…')
 
-  const commentsData = Array.from({ length: 20 }).map(() => ({
+  const commentsData = Array.from({ length: 60 }).map(() => ({
     content: faker.lorem.sentences(2),
     post_id: faker.helpers.arrayElement(postIds),
     author_id: faker.helpers.arrayElement(authorIds),
@@ -206,11 +206,11 @@ async function seedComments() {
   console.log(`✅ Created ${result.count} comments`)
 }
 
-// seedComments()
-//   .catch(e => {
-//     console.error('❌ Error seeding comments:', e)
-//     process.exit(1)
-//   })
-//   .finally(async () => {
-//     await prisma.$disconnect()
-//   })
+seedComments()
+  .catch(e => {
+    console.error('❌ Error seeding comments:', e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
