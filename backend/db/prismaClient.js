@@ -1,5 +1,29 @@
-import 'dotenv/config';
+// backend/db/prismaClient.js
+
+// Load path utilities
+import path from 'node:path';
+
+// Load URL-to-path converter
+import { fileURLToPath } from 'node:url';
+
+// Load .env support
+import dotenv from 'dotenv';
+
 import { PrismaClient } from '@prisma/client';
+
+// Convert the current file URL to a real file path. Resolve backend/db → backend → backend/prisma/.env
+
+// Get absolute URL of prismaClient.js - C:\Users\johnw\Documents\Code Development\projects_backend\prisma-demo_dev\backend\db\prismaClient.js
+const __filename = fileURLToPath(import.meta.url);  
+
+//Get absolute directory of prismaClient.js - C:\Users\johnw\Documents\Code Development\projects_backend\prisma-demo_dev\backend\db
+const __dirname = path.dirname(__filename);         
+
+//'..' moves up one directory to backend folder and adds prisma folder, yielding C:\Users\johnw\Documents\CodeDevelopment\projects_backend\prisma-demo_dev\backend\prisma\.env
+const envPath = path.join(__dirname, '..', 'prisma', '.env');  
+
+// Load the env file explicitly. 
+dotenv.config({ path: envPath });
 
 // Instantiate PrismaClient and configure it to emit events for every query
 const prisma = new PrismaClient({
@@ -127,8 +151,8 @@ async function publishedPostsAuthorCommentsSinceDate(startDate) {
     const posts = await prisma.post.findMany({
       where: {
         AND: [
-          { published: true },
           { created_at: { gte: new Date(startDate) } },
+          { published: true }
         ],
       },
       include: {
@@ -205,7 +229,7 @@ async function topFiveAuthorsByPublishedCount() {
   }
 }
 
-// topFiveAuthorsByPublishedCount();
+topFiveAuthorsByPublishedCount();
 
 //All users authored at least 5 published posts, count of their posts and most recent post
 
@@ -280,9 +304,12 @@ async function getActiveUsersWithRecentPosts_v2 () {
         _count: {
             id: 'desc'
         }}
-  })
-  // console.log(activeUsers);
-
+    })
+    if (!activeUsers || activeUsers.length === 0) {
+      console.log('No active users found');
+      return [];
+    }
+    
   const activeUsersPost = await Promise.all(
     activeUsers.map(async (authorStats) => {
     const userRecord = await prisma.user.findUnique({
@@ -293,13 +320,18 @@ async function getActiveUsersWithRecentPosts_v2 () {
         posts:  {
           where: {
             created_at: authorStats._max.created_at,
-            published: true,
           },
-          take: 1
-        }
-      }
+          orderBy: {
+            created_at: 'desc'
+          },
+          take: 1,
+          select: {
+           content: true,
+           created_at: true
+          },
+        },
+      },
     })
-    // console.log(userRecord);
     
     return {
       authorId: userRecord.id,

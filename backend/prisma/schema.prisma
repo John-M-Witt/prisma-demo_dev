@@ -20,6 +20,7 @@ model User {
   created_at DateTime  @default(now())
 
   @@index([name]) // Index on name for faster lookups
+  @@index([created_at]) // Index on created_at date for faster lookups
   @@map("users") // Maps to the "users" table in the database. 
 }
 
@@ -45,6 +46,7 @@ model Post {
   created_at DateTime  @default(now())
 
   @@map("posts") // Maps to the "Posts" table in the database
+  @@index([created_at]) 
 }
 
 model Comment {
