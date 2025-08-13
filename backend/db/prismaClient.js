@@ -350,4 +350,31 @@ async function getActiveUsersWithRecentPosts_v2 () {
   }
 }
 
-getActiveUsersWithRecentPosts_v2();
+// getActiveUsersWithRecentPosts_v2();
+
+async function searchPostsContent (keyword) {
+  try {
+    const matchingPosts = await prisma.$queryRaw`
+      SELECT * 
+      FROM "posts"
+      WHERE "content" % ${keyword}
+    `;
+
+    if (!matchingPosts || matchingPosts.length === 0) {
+      console.log('No matching posts found.')
+    } else {
+      console.log(`Posts matching the ${keyword} keyword:`, matchingPosts)
+    } 
+  } 
+  catch (error) {
+    console.log(`Error retrieving matching posts`);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+  
+searchPostsContent()
+
+
+
+//ILIKE ${'%' + keyword + '%'} 

@@ -10,7 +10,8 @@ import { fileURLToPath } from 'node:url';
 // Validates the structure and makes it future-proof for new Prisma config features
 import { defineConfig } from 'prisma/config'; 
 
- 
+import { config as loadEnv } from 'dotenv';
+
 //Convert the current module's URL (import.meta.url) to a filesystem path string
 //file:///C:/Users/johnw/Documents/Code Development/projects_backend/prisma-demo_dev/prisma.config.mjs
 //become c:\Users\johnw\Documents\Code Development\projects_backend\prisma-demo_dev\prisma.config.mjs
@@ -19,6 +20,8 @@ const __filename = fileURLToPath(import.meta.url);
 //Gets directory name from the full file path  (similar to __dirname in CommonJS)
 //Result: c:\Users\johnw\Documents\Code Development\projects_backend\prisma-demo_dev\backend
 const __dirname = path.dirname(__filename);
+
+loadEnv({ path: path.join(__dirname, 'prisma', '.env') });
 
 // Helper function to build absolute paths from the current directory (__dirname)
 const fromHere = (...s) => path.join(__dirname, ...s);
