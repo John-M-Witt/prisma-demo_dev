@@ -50,7 +50,7 @@ export default defineConfig({
     //   1. Load the schema
     //   2. Connect to the DB
     //   3. Run this seed command
-    seed: `node ${fromHere('prisma', 'seed.js')}`,
+    seed: `node ./prisma/seed.js`,
   
  // initShadowDb: `...` // optional
   },
