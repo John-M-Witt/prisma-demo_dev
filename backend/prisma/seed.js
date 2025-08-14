@@ -8,10 +8,12 @@ import {PrismaClient} from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
+
+//Set desired numbers prior to seeding  
 const totalUsers = 2000;
 const totalTopics = 250;
-const totalPosts = 0; //user and topic IDs are required prior to seeding posts 
-const totalComments = 0; //Post IDs are required prior to seeding comments
+const totalPosts = 0; //Seed users and topics first since their IDs are required for seeding posts 
+const totalComments = 0; //Seed posts since posts IDs are required  to seed comments
 
 async function seedUsers() {
   console.log('🌱 Starting user seed...');
