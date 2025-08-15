@@ -52,9 +52,13 @@ export default defineConfig({
     //   3. Run this seed command
     seed: `node ./prisma/seed.js`,
   
- // initShadowDb: `...` // optional
+  // Configuration for the `typedSql` preview feature.
+  typedSql: {
+    path: fromHere('prisma', 'sql')
   },
 
+ // initShadowDb: `...` // optional
+  }
   // Optional extras not currently used:
   // views: { path: fromRoot('prisma', 'views') },
   // typedSql: { path: fromRoot('prisma', 'queries') },

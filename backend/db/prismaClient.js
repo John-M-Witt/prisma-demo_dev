@@ -26,7 +26,7 @@ const envPath = path.join(__dirname, '..', 'prisma', '.env');
 dotenv.config({ path: envPath });
 
 // Instantiate PrismaClient and configure it to emit events for every query
-const prisma = new PrismaClient({
+export const prisma = new PrismaClient({
   // Emit a 'query' event whenever Prisma executes a SQL statement
   log: [{ emit: 'event', level: 'query' }]
 });
@@ -352,6 +352,7 @@ async function getActiveUsersWithRecentPosts_v2 () {
 
 // getActiveUsersWithRecentPosts_v2();
 
+//
 async function searchPostsContent (keyword) {
   try {
     const matchingPosts = await prisma.$queryRaw`
@@ -373,8 +374,7 @@ async function searchPostsContent (keyword) {
   }
 }
   
-searchPostsContent()
+searchPostsContent('incedent');
 
 
 
-//ILIKE ${'%' + keyword + '%'} 
