@@ -1,3 +1,5 @@
+// prisma + raw sql queries for users
+
 // backend/db/prismaClient.js
 
 // Load path utilities

@@ -1,4 +1,29 @@
-// backend/prisma.config.mjs
+import path from 'node:path';  
+import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'prisma/config'; 
+import { config as loadEnv } from 'dotenv';
+
+const __filename = fileURLToPath(import.meta.url); 
+const __dirname = path.dirname(__filename); 
+
+loadEnv({ path: path.join(__dirname, 'prisma', '.env') });
+
+const fromHere = (...s) => path.join(__dirname, ...s);
+
+export default defineConfig({
+  schema: fromHere('prisma', 'schema.prisma'), 
+  migrations: {
+    path: fromHere('prisma', 'migrations'), 
+    seed: `node ./prisma/seed.js`
+  },
+  typedSql: {
+    path: fromHere('prisma', 'sql')
+  }
+});
+
+
+/*
+// Explanation of backend/prisma.config.mjs
 
 // Import Node's built-in 'path' module for working with cross-platform file and directory paths
 import path from 'node:path';  
@@ -65,3 +90,10 @@ export default defineConfig({
   // tables: { external: [] },
   // enums: { external: [] },
 });
+
+
+
+
+
+
+*/
