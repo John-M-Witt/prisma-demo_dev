@@ -4,7 +4,7 @@
 
 import { PrismaClient } from '@prisma/client';
 
-// Use a unique key on globalThis to avoid accidental name collisions.
+// Adds a unique key on globalThis to avoid accidental name collisions.
 // This stores the client across module reloads (useful in dev with HMR)
 const GLOBAL_KEY = '__learn_prisma_prisma_client__';
 
@@ -12,7 +12,7 @@ const GLOBAL_KEY = '__learn_prisma_prisma_client__';
 const globalWithPrisma = globalThis;
 
 // If an instance already exists on the global object, reuse it.
-// Otherwise create a new PrismaClient instance. We use the nullish operator (??)
+// Otherwise create a new PrismaClient instance. Uses the nullish operator (??)
 // so that falsy-but-valid values (0, '', false) won't trigger creation — only
 // undefined/null do.
 const prisma = globalWithPrisma[GLOBAL_KEY] ?? new PrismaClient({

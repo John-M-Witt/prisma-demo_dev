@@ -4,11 +4,16 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:client": "npx prisma generate",
+    "prisma:seed": "npx prisma db seed",
+    "query:comments": "node src/scripts/run-comments.js",
+    "query:posts": "node src/scripts/run-posts.js"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "ISC", 
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.14.0",
