@@ -73,7 +73,7 @@ export async function addComment(input) {
   // --- 4. Create and translate common DB errors
   try {
     // Use repo to create the comment (repo returns the created comment)
-    const created = await repo.addCommentToPost(payload);
+    const created = await repo.addCommentToPost({data: payload});
     return created;
   } catch (err) {
     // Prisma foreign-key failure (rare now because we checked existence)

@@ -1,41 +1,10 @@
 import {prisma} from '../../prismaClient.js'; 
 
 
-// Create a new user
-export async function createUser(name, email) {
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name,
-        city,
-        created_at: new Date()
-      },
-    });
-}
-
-// Read all users
-export async function findAllUsers() {
-    const users = await prisma.user.findMany();
-}
-
-// Delete user by email
-export async function deleteUserByEmail(email) {
-  const user = await prisma.user.delete({
-    where: { email },
-    });
-}
-
-//Update existing user email   
-export async function updateUserEmail(oldEmail, newEmail) {
-  const user = await prisma.user.update({
-    where: { email: oldEmail },
-    data: { email: newEmail },
-    });
-}
-
 //Create a post
-export async function addPost(title, content, published, author_id, topic_id) {
-    const newPost = await prisma.post.create({
+export function addPost(title, content, published, author_id, topic_id) {
+  try {
+    const newPost = prisma.post.create({
       data: {
         title,
         content,
@@ -44,19 +13,14 @@ export async function addPost(title, content, published, author_id, topic_id) {
         topic_id,
       },
     });
+    console.log(`Post created: ${newPost}`);
+  }
+  catch (error) {
+    console.error(`Error creating post: ${error}`);
+  } finally {
+    prisma.$disconnect();
+  }
 }
-
-export async function newUsersByDateRange(startDate, EndDate) {
-  const usersByDate = await prisma.user.findMany({
-    where: {
-      AND: [
-        { created_at: { gte: new Date(startDate), } },
-        { created_at: { lte: new Date(EndDate) } },
-      ]
-    }
-  })
-}
-
 
 //Returns published posts after a specified date
     const posts = await prisma.post.findMany({
@@ -86,9 +50,9 @@ export async function newUsersByDateRange(startDate, EndDate) {
 
 
 //Returns top five authors based on the total number of published posts
-export async function topFiveAuthorsByPublishedCount() {
+export function topFiveAuthorsByPublishedCount() {
   // 1) Group & count only published posts per author
-  const publishedCounts = await prisma.post.groupBy({
+  const publishedCounts = prisma.post.groupBy({
   by: ['author_id'],
     where: { published: true },          // only published posts
     _count: { author_id: true },         // count posts per author
@@ -98,7 +62,7 @@ export async function topFiveAuthorsByPublishedCount() {
 
   // 2) Fetch those authors’ details, leveraging the from User model table
   const authorIds = publishedCounts.map(r => r.author_id);
-  const authors = await prisma.user.findMany({
+  const authors = prisma.user.findMany({
     where: { id: { in: authorIds } },
     select: { id: true, name: true, city: true },
   })
@@ -120,51 +84,8 @@ export async function topFiveAuthorsByPublishedCount() {
 
 //All users authored at least 5 published posts, count of their posts and most recent post
 
-//Option 1
-
-export async function getActiveUsersWithRecentPosts() {
-  const users = await prisma.user.findMany({
-    where: {
-      posts: {
-        some: { published: true }
-      }
-    },
-    include: {
-      _count: {             //Total published posts by User id, including those less than 5
-        select: {
-          posts: true
-        }
-      },
-      posts: {
-        where: {
-          published: true,
-        },
-        orderBy: {
-          created_at: 'desc'
-        },
-        take: 1,
-        select: {
-          content: true,
-          created_at: true
-        }
-      }
-    }
-  });
-const result = users
-  .filter(user => user._count.posts >= 5) //Removes users with < 5 posts
-  .map(activeUser => ({                   //Maps remaining users to desired fields
-    id: activeUser.id,
-    name: activeUser.name,
-    totalPosts: activeUser._count.posts,
-    LatestPost: activeUser.posts[0]
-    })
-  )
-}
-
-//Option 2 - More efficient approach
-
-export async function getActiveUsersWithRecentPosts_v2 () {
-  const activeUsers = await prisma.post.groupBy({
+export function getActiveUsersWithRecentPosts_v2 () {
+  const activeUsers = prisma.post.groupBy({
   by: ['author_id'],
     where: {published: true},
     _count: {author_id: true},
@@ -188,7 +109,7 @@ export async function getActiveUsersWithRecentPosts_v2 () {
     return [];
   }
   
-  const activeUsersPost = await Promise.all(
+  const activeUsersPost = Promise.all(
     activeUsers.map(async (authorStats) => {
     const userRecord = await prisma.user.findUnique({
       where: {
@@ -222,8 +143,8 @@ export async function getActiveUsersWithRecentPosts_v2 () {
   );
 }
 
-export async function searchPostsContent (keyword) {
-  const matchingPosts = await prisma.$queryRaw`
+export function searchPostsContent (keyword) {
+  const matchingPosts = prisma.$queryRaw`
     SELECT * 
     FROM "posts"
     WHERE "content" % ${keyword}

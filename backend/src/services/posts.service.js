@@ -1,11 +1,13 @@
+// backend/src/services/posts.service.js
+// Business / domain layer for "posts".
+// - Validates and sanitizes input
+// - Checks existence of related records (post, author)
+// - Calls the repo (DB) functions to perform writes/reads
+// - Translates common Prisma errors into domain errors
+
 import { 
-    createUser, 
-    findAllUsers,
-    deleteUserByEmail, 
-    updateUserEmail, 
-    addPost, 
-    newUsersByDateRange, 
-    topFiveAuthorsByPublishedCount, getActiveUsersWithRecentPosts_v2 
+    topFiveAuthorsByPublishedCount, 
+    getActiveUsersWithRecentPosts_v2 
 } from "../db/queries/posts/posts.repo";
 
 import prisma from '../db/prismaClient';
@@ -18,22 +20,5 @@ export class ServiceError extends Error {}
 
 const toCleanString = (value) => (value == null ? '' : String(value)).trim();
 
-export async function createUser (input) {
-    // --- 1. Basic validation & sanitization (whitelist)
-    const email = toCleanString(input.email);
-    const name = toCleanString(input.name);
-    const city = toCleanString(input.city);
 
-    if (!email) {
-        throw new BadRequestError('email is required.');
-    }
-    
-    if (!name) {
-        throw new BadRequestError('name is required');
-    }
-
-    if (!city) {
-        throw new BadRequestError('city is required');
-    }
-}
 
