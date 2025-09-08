@@ -1,5 +1,5 @@
 # Runtime files
-node_modules/
+**/node_modules/
 
 #Environment files
 .env
