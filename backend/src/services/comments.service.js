@@ -2,11 +2,13 @@
 // Business / domain layer for "comments".
 // - Validates and sanitizes input
 // - Checks existence of related records (post, author)
-// - Calls the repo (DB) functions to perform writes/reads
+// - Calls the commentsRepo (DB) functions to perform writes/reads
 // - Translates common Prisma errors into domain errors
 
-import * as repo from '../db/queries/comments/comments.repo.js';
+import * as commentsRepo from '../db/queries/comments/comments.repo.js';
 import { prisma } from '../db/prismaClient.js'; // used for existence checks and transactions
+import { Prisma } from '@prisma/client'; // used to narrow Prisma errors
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 // Domain error types so callers can react appropriately
 export class BadRequestError extends Error {}
@@ -15,28 +17,46 @@ export class ConflictError extends Error {}
 export class ServiceError extends Error {}
 
 /**
+ * @typedef {Object} Comment
+ * @property {string} id
+ * @property {string} content
+ * @property {string} authorId
+ * @property {string} postId
+ * @property {string} created_at
+ */
+
+/**
  * Return the latest comments (thin wrapper so caching/metrics later can be added later).
- * @param {number} limit number of comments to return (default 10)
- * @returns {Promise<Array>} array of comment objects
+ * @param {number} [limit=10] Number of comments to return (default 10)
+ * @returns {Promise<Array<object>>} array of comment objects
  */
 export async function getLatestComments(limit = 10) {
- const parsed = Number(limit);
+ const parsed = Math.trunc(Number(limit));
   if (!Number.isFinite(parsed)) {
-    throw new Error('limit must be a number');
+    throw new BadRequestError('limit must be a number');
   }
-  const effective = Math.max(1, Math.min(100, Math.trunc(parsed)));
-  return repo.findLatestComments(effective);}
+  const effectiveLimit = Math.max(1, Math.min(100, Math.trunc(parsed)));
+
+   // Service layer uses await and will translate DB errors if needed
+  try {
+    return await commentsRepo.getLatestComments(effectiveLimit);
+  } catch (err) {
+    console.error('getLatestComments: unexpected DB error', err);
+    throw new ServiceError('Unable to fetch latest comments');
+  }
+}
+
+// Sanitize helper
+const toCleanString = (value) => (value == null ? '' : String(value)).trim();
 
 /**
  * Add a comment to a post.
- * Accepts an input object and returns the created comment (including any includes repo returns).
+ * Accepts an input object and returns the created comment (including any includes commentsRepo returns).
  *
  * Expected input shape (example): { content, post_id, author_id }
  */
-const toCleanString = (value) => (value == null ? '' : String(value)).trim();
-
 export async function addComment(input) {
-  // --- 1. Basic validation & sanitization (whitelist)
+  // --- 1. Basic validation & sanitization
   const content = toCleanString(input.content);
   const post_id = toCleanString(input.post_id);
   const author_id = toCleanString(input.author_id); 
@@ -53,60 +73,81 @@ export async function addComment(input) {
     throw new BadRequestError('author_id is required');
   }
 
-  // --- 2. Existence checks (friendly error messages)
-  // Quick parallel existence checks to avoid foreign-key errors and provide clear messages.
-  const [post, author] = await Promise.all([
-    prisma.post.findUnique({ where: { id: post_id }, select: { id: true } }),
-    prisma.user.findUnique({ where: { id: author_id }, select: { id: true } })
-  ]);
-
-  if (!post) throw new NotFoundError(`Post ${post_id} not found`);
-  if (!author) throw new NotFoundError(`Author ${author_id} not found`);
-
-  // --- 3. Build payload (whitelist only allowed fields)
   const payload = {
     content,
     post_id,
     author_id
   };
 
-  // --- 4. Create and translate common DB errors
+  // --- 2. Run existence checks + create atomically in a transaction
   try {
-    // Use repo to create the comment (repo returns the created comment)
-    const created = await repo.addCommentToPost({data: payload});
+    // Use tx for reads & writes to avoid races
+    const created = await prisma.$transaction(async (tx) => {
+
+    // Existence checks: perform inside transaction to avoid races
+    const [post, author] = await Promise.all([
+      tx.post.findUnique({ where: { id: post_id }, select: { id: true } }),
+      tx.user.findUnique({ where: { id: author_id }, select: { id: true } })
+    ]);
+
+    if (!post) {
+      // Throwing here aborts the transaction and causes the outer catch to handle mapping
+      throw new NotFoundError(`Post ${post_id} not found`);
+    }
+    if (!author) {
+      throw new NotFoundError(`Author ${author_id} not found`)
+    };
+    // Create the comment using the transactional client
+    return commentsRepo.addCommentToPost(payload, tx);
+    });
+
     return created;
-  } catch (err) {
-    // Prisma foreign-key failure (rare now because we checked existence)
-    if (err?.code === 'P2003') {
-      throw new ServiceError('Foreign key constraint failed');
+  
+  } catch (rawErr) {
+    // Re-throw domain errors that originated inside the transaction
+    if (rawErr instanceof BadRequestError || rawErr instanceof NotFoundError) {
+      console.warn('Domain error in addComment transaction', { payload, err: rawErr });
+      throw rawErr
     }
-    // Unique constraint, etc. (example)
-    if (err?.code === 'P2002') {
-      throw new ConflictError('Unique constraint violation');
+     // Narrow Prisma known-request errors before inspecting codes
+    if (rawErr instanceof Prisma.PrismaClientKnownRequestError) {
+        // Foreign key failure (unlikely due to existence checks inside tx)
+      if (rawErr.code === 'P2003'){
+        console.error('Prisma P2003 (FK) error while adding comment', { payload, meta: rawErr.meta});
+        throw new ServiceError('Foreign key constraint failed');
+      }
+      // Unique constraint violation
+      if (rawErr.code === 'P2002') {
+        const target = rawErr.meta?.target;
+        const fields = Array.isArray(target) ? target.join(',') : target;
+        throw new ConflictError(`Duplicate value for fields: ${fields ?? 'unknown'}`);
+      } 
     }
-    // Unexpected: wrap in ServiceError to avoid leaking DB internals to callers
-    throw new ServiceError(err?.message ?? String(err));
-  }
+    // Unexpected: log context and wrap
+    console.error('addComment: unexpected error', { payload, err: rawErr });
+    throw new ServiceError('Unable to add comment');}
 }
 
 /**
  * Remove a comment by id.
  * Returns the deleted comment record (Prisma's delete will throw if the record doesn't exist).
- * If you prefer idempotent delete, use deleteMany in repo and return the count.
+ * If you prefer idempotent delete, use deleteMany in commentsRepo and return the count.
  */
 export async function removeComment(id) {
-  if (id === undefined || id === null || String(id).trim() === '') {
+  const idClean = toCleanString(id)
+  if (!idClean) {
     throw new BadRequestError('id is required to delete a comment');
   }
 
   try {
-    const deleted = await repo.deleteCommentById(id);
+    const deleted = await commentsRepo.deleteCommentById(id);
     return deleted;
   } catch (err) {
-    // Prisma throws P2025 when the record to delete does not exist
-    if (err?.code === 'P2025' || /record to delete does not exist/i.test(String(err?.message ?? ''))) {
-      throw new NotFoundError(`Comment ${id} not found`);
+    if(err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
+      throw new NotFoundError(`Comment ${id} not found`); 
     }
-    throw new ServiceError(err?.message ?? String(err));
+    console.error('removeComment: unexpected error', err)
+    throw new ServiceError('Unable to delete comment');
+    }
   }
-}
+
