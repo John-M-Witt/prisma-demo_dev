@@ -3,7 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["typedSQL"] //Add sql file for each raw sql query for use in prismaClient. 
+  previewFeatures = ["typedSQL", "fullTextSearchPostgres"] //Add sql file for each raw sql query for use in prismaClient. Not using fullTextSearch yet due to slow searches while in preview
 }
 
 datasource db {
