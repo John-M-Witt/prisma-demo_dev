@@ -1,19 +1,21 @@
-// backend/src/services/users.service.js
-// Business / domain layer for "users".
-// - Validates and sanitizes input
-// - Checks existence of related records (email)
-// - Calls the repo (DB) functions to perform writes/reads
-// - Translates common Prisma errors into domain errors
+/** backend/src/services/users.service.js
+ * Business / domain layer for "users".
+ * Validates and sanitizes input
+ * Checks existence of related records (email)
+ * Calls the repo (DB) functions to perform writes/reads
+ * Translates common Prisma errors into domain errors
+*/
 
-import { 
-    createUser, 
-    findUsersByCity,
-    deleteUserByEmail, 
-    updateUserEmail, 
-    newUsersByDateRange, 
-    topFiveUsersByPublishedCount, 
-    getActiveUsersStats 
-} from "../db/queries/posts/posts.repo";
+import * as usersRepo from "../db/queries/posts/posts.repo";
+/** usersRepo functions
+ * createUser,
+ * findUsersByCity,
+ * deleteUserByEmail, 
+ * updateUserEmail,
+ * newUsersByDateRange,
+ * topFiveUsersByPublishedCount, 
+ * getActiveUsersStats 
+*/
 
 import prisma from '../db/prismaClient';
 
@@ -24,7 +26,7 @@ export class ConflictError extends Error {}
 export class ServiceError extends Error {}
 
 const toCleanString = (value) => (value == null ? '' : String(value)).trim();
-const toCleanNumber = (value) => Number.isFinite(value) ? Number(value).round() : NaN;
+const toCleanNumber = (value) => Number.isFinite(value) ? Number(value).Math.trunc() : NaN;
 
 export async function createNewUser (input) {
     // --- 1. Basic validation & sanitization (whitelist)
@@ -64,7 +66,7 @@ if(emailExists) throw new ConflictError('email address already exists');
 
 // --- 4. Create and translate common DB errors
 try {
-    const newUser = await createUser({data: payload});
+    const newUser = await usersRepo.createUser({data: payload});
     return newUser;
 } catch (err) {
     //unique constraint violation

@@ -20,7 +20,11 @@ export function createUser(email, name, city) {
  * `Limit` may be undefined; service layer enforces defaults/clamps.
 */
 export function findUsersByCity (cityName, limit) {
-  const opts = {where: {city: cityName} };
+  const opts = {
+    where: {
+      city: cityName,
+      mode: insensitive
+    } };
   if(typeof limit === 'number') opts.take = limit;
   return prisma.user.findMany(opts);
 }
