@@ -5,7 +5,7 @@
 // - Calls the commentsRepo (DB) functions to perform writes/reads
 // - Translates common Prisma errors into domain errors
 
-import * as commentsRepo from '../db/queries/comments/comments.repo.js';
+import * as commentsRepo from '../db/queries/comments/index.js';
 import { prisma } from '../db/prismaClient.js'; // used for existence checks and transactions
 import { Prisma } from '@prisma/client'; // used to narrow Prisma errors
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
