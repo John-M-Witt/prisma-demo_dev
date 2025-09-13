@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint \"src/**/*.{js,mjs,cjs}\"",
+    "lint:fix": "eslint --fix \"src/**/*.{js,mjs,cjs}\"",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:client": "npx prisma generate",
     "prisma:seed": "npx prisma db seed",
@@ -13,14 +15,17 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC", 
+  "license": "ISC",
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.14.0",
     "dotenv": "^17.2.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.35.0",
     "@faker-js/faker": "^9.9.0",
+    "eslint": "^9.35.0",
+    "globals": "^16.4.0",
     "prisma": "^6.14.0"
   }
 }
