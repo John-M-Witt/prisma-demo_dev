@@ -1,0 +1,40 @@
+{
+  "env": {
+    "es2022": true
+  },
+  "overrides": [
+    {
+      "files": ["**/*.{js,cjs,mjs,ts,cts,mts}"],
+      "env": { "node": true },
+      "globals": {
+      "process": "readonly",
+      "console": "readonly",
+      "__dirname": "readonly",
+      "__filename": "readonly",
+      "Buffer": "readonly",
+      "global": "readonly",
+      "module": "readonly",
+      "require": "readonly",
+      "exports": "readonly",
+      "setImmediate": "readonly",
+      "clearImmediate": "readonly",
+      "setTimeout": "readonly",
+      "clearTimeout": "readonly",
+      "setInterval": "readonly",
+      "clearInterval": "readonly"
+    }
+  }
+  ],
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "ignorePatterns": ["node_modules/", "dist/"],
+  "rules": {
+    "node/no-process-env": "off",
+    "no-console": "off",
+    "eqeqeq": ["error", "always", {"null": "ignore"}], 
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+  }
+}

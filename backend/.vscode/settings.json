@@ -1,5 +1,8 @@
 {
     "cSpell.words": [
         "autoincrement"
-    ]
+    ],
+    "eslint.useGlobal": false,
+    "eslint.workingDirectories": [{ "mode": "auto" }],
+    "eslint.nodePath": ""   
 }
