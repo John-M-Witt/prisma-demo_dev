@@ -24,7 +24,7 @@ loadEnvOnce(); // must run before importing prismaClient
 //  --key=value  --key value  -k value  --flag
 function parseArgs(rawArgs) {
   const args = {};
-  const tokens = Array.from(rawArgs); // copy
+  const tokens = Array.from(rawArgs); 
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (t.startsWith('--')) {
@@ -109,8 +109,8 @@ Examples:
   // Aliases and helpers
   const getLimit = () => {
     const l = opts.limit ?? opts.l ?? 10;
-    const parsed = Number(l);
-    return Number.isFinite(parsed) ? Math.max(1, Math.min(100, Math.trunc(parsed))) : 10;
+    const parsed = Math.trunc(Number(l));
+    return Number.isFinite(parsed) ? Math.max(1, Math.min(100, parsed)) : 10;
   };
 
   const getContent = () => opts.content ?? opts.c ?? opts._positional?.[0] ?? '';
@@ -137,7 +137,7 @@ Examples:
         return;
       }
 
-      // Build payload according to your service expectation
+      // Build payload according to service expectation
       const payload = { content, post_id, author_id };
 
       const created = await addComment(payload);

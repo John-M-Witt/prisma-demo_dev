@@ -35,7 +35,7 @@ export async function getLatestComments(limit = 10) {
   if (!Number.isFinite(parsed)) {
     throw new BadRequestError('limit must be a number');
   }
-  const effectiveLimit = Math.max(1, Math.min(100, Math.trunc(parsed)));
+  const effectiveLimit = Math.max(1, Math.min(100, parsed));
 
    // Service layer uses await and will translate DB errors if needed
   try {

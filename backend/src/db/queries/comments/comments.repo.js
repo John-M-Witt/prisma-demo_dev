@@ -3,7 +3,7 @@
 
 import {prisma} from '../../prismaClient.js'; 
 
-const MAX_LIMIT = 100; // repo-level safety cap (set lower in service level)
+const MAX_LIMIT = 50; // repo-level safety cap (set lower in service level)
 
 /**
  * Repo: get latest comments from published posts.
@@ -35,7 +35,7 @@ export function getLatestComments (limit, client = prisma) {
             id: true,
             title: true, 
             content: true,
-            published
+            published: true
           }
         },
         author: {
